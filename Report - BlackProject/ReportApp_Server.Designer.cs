@@ -45,6 +45,8 @@
             this.ViewDupBtn = new System.Windows.Forms.Button();
             this.CDInpBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.ListForDuplicateFile = new System.Windows.Forms.ListBox();
+            this.DuplicateFilesListLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // textBoxForPath
@@ -107,6 +109,7 @@
             this.TotalFileCountLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TotalFileCountLabel.Location = new System.Drawing.Point(330, 175);
             this.TotalFileCountLabel.Name = "TotalFileCountLabel";
+            this.TotalFileCountLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.TotalFileCountLabel.Size = new System.Drawing.Size(16, 18);
             this.TotalFileCountLabel.TabIndex = 5;
             this.TotalFileCountLabel.Text = "0";
@@ -152,6 +155,7 @@
             this.NewFileCountLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NewFileCountLabel.Location = new System.Drawing.Point(330, 220);
             this.NewFileCountLabel.Name = "NewFileCountLabel";
+            this.NewFileCountLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.NewFileCountLabel.Size = new System.Drawing.Size(16, 18);
             this.NewFileCountLabel.TabIndex = 9;
             this.NewFileCountLabel.Text = "0";
@@ -189,6 +193,7 @@
             this.DuplicateFileCountLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DuplicateFileCountLabel.Location = new System.Drawing.Point(330, 198);
             this.DuplicateFileCountLabel.Name = "DuplicateFileCountLabel";
+            this.DuplicateFileCountLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.DuplicateFileCountLabel.Size = new System.Drawing.Size(16, 18);
             this.DuplicateFileCountLabel.TabIndex = 12;
             this.DuplicateFileCountLabel.Text = "0";
@@ -202,6 +207,7 @@
             this.ViewDupBtn.Text = "View";
             this.ViewDupBtn.UseVisualStyleBackColor = true;
             this.ViewDupBtn.Visible = false;
+            this.ViewDupBtn.Click += new System.EventHandler(this.ViewDupBtn_Click);
             // 
             // CDInpBox
             // 
@@ -221,11 +227,35 @@
             this.label6.TabIndex = 15;
             this.label6.Text = "CD Name";
             // 
+            // ListForDuplicateFile
+            // 
+            this.ListForDuplicateFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ListForDuplicateFile.FormattingEnabled = true;
+            this.ListForDuplicateFile.ItemHeight = 16;
+            this.ListForDuplicateFile.Location = new System.Drawing.Point(438, 167);
+            this.ListForDuplicateFile.Name = "ListForDuplicateFile";
+            this.ListForDuplicateFile.ScrollAlwaysVisible = true;
+            this.ListForDuplicateFile.Size = new System.Drawing.Size(162, 132);
+            this.ListForDuplicateFile.TabIndex = 16;
+            this.ListForDuplicateFile.Visible = false;
+            // 
+            // DuplicateFilesListLabel
+            // 
+            this.DuplicateFilesListLabel.AutoSize = true;
+            this.DuplicateFilesListLabel.Location = new System.Drawing.Point(435, 151);
+            this.DuplicateFilesListLabel.Name = "DuplicateFilesListLabel";
+            this.DuplicateFilesListLabel.Size = new System.Drawing.Size(76, 13);
+            this.DuplicateFilesListLabel.TabIndex = 17;
+            this.DuplicateFilesListLabel.Text = "Duplicate Files";
+            this.DuplicateFilesListLabel.Visible = false;
+            // 
             // ReportApp_Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(713, 450);
+            this.Controls.Add(this.DuplicateFilesListLabel);
+            this.Controls.Add(this.ListForDuplicateFile);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.CDInpBox);
             this.Controls.Add(this.ViewDupBtn);
@@ -268,6 +298,8 @@
         private System.Windows.Forms.Button ViewDupBtn;
         private System.Windows.Forms.TextBox CDInpBox;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ListBox ListForDuplicateFile;
+        private System.Windows.Forms.Label DuplicateFilesListLabel;
     }
 }
 

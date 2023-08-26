@@ -5,6 +5,11 @@ using System.IO;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using System.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static ReportApp_Client.ReportApp_Client;
+using System.Linq;
+using MySqlX.XDevAPI;
+using ReportApp_Client.Properties;
 //using FastReport;
 
 namespace ReportApp_Client
@@ -20,47 +25,84 @@ namespace ReportApp_Client
             con = new MySqlConnection(MyConnectionString);
             loadCDs();
         }
+        public class Files
+        {
+            public Files() { }
+            public string Id { set; get; }
+            public string FileName { set; get; }
+            public string Path { set; get; }
+
+        }
         public class Item
         {
             public Item() { }
-            //public string Value { set; get; }
             public string Text { set; get; }
+            public int Value { set; get; }
         }
         string MyConnectionString = "Server=localhost;Database=ReportApp;Uid=root;Pwd=";
         void loadCDs()
         {
             List<Item> items = new List<Item>();
-            items.Add(new Item() { Text = "displayText1" });
-            items.Add(new Item() { Text = "displayText2"});
-            CDDropDown.DataSource = items;
-            CDDropDown.DisplayMember = "Text";
-            CDDropDown.ValueMember = "Text";
-        }
-        private void SendRequestBtn_Click(object sender, EventArgs e)
-        {
-            int RequestNumOfFile = (int)Math.Round(NumOfFileBox.Value);
-            string ClientName = "TestName";
-            List<string> RecievedFiles = new List<string>();
             try
             {
                 con.Open();
                 cmd = con.CreateCommand();
-                cmd.CommandText = "SELECT * FROM `reportfiles` WHERE IsGenerated = false and ClientName IS NULL LIMIT " + RequestNumOfFile;
+                cmd.CommandText = "SELECT DISTINCT(CD) FROM `reportfiles`";
+                dr = cmd.ExecuteReader();
+                var count = 1;
+                while (dr.Read())
+                {
+                    items.Add(new Item() { Text = dr.GetString("CD"), Value = count });
+                    count++;
+                }
+                count = 0;
+                dr.Close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                con.Close();
+            }
+            CDDropDown.DataSource = items;
+            CDDropDown.DisplayMember = "Text";
+            CDDropDown.ValueMember = "Value";
+        }
+        List<Files> RecievedFiles = new List<Files>();
+        private void SendRequestBtn_Click(object sender, EventArgs e)
+        {
+            RecievedFiles.Clear();
+            //int RequestNumOfFile = (int)Math.Round(NumOfFileBox.Value);
+            Item RequestedCD = (Item)CDDropDown.SelectedItem;
+            string ClientName = "TestName";
+            List<string> FilesToDownload = new List<string>();
+            CheckedListForRecivedFile.Items.Clear();
+            //listViewForRecivedFile.Columns.Add("File Name");
+
+            try
+            {
+                con.Open();
+                cmd = con.CreateCommand();
+                //cmd.CommandText = "SELECT * FROM `reportfiles` WHERE CD = '@CD' and ClientName IS NULL LIMIT @RequestNumOfFile";
+                cmd.CommandText = "SELECT * FROM `reportfiles` WHERE CD = '" + RequestedCD.Text + "' AND ClientName IS NULL AND IsFetched IS FALSE";
+                Console.WriteLine(cmd.CommandText);
+
+                //cmd.Parameters.AddWithValue("@CD", RequestedCD.Text);
+                //cmd.Parameters.AddWithValue("@RequestNumOfFile", RequestNumOfFile);
                 dr = cmd.ExecuteReader();
                 while (dr.Read())
                 {
                     Console.WriteLine( "file id : "+dr.GetInt16("Id"));
                     //adding all files in list and return
-                    RecievedFiles.Add(dr.GetString("Path"));
-                    //dr.GetString("FileName"),
+                    RecievedFiles.Add(new Files { Id = dr.GetString("Id"), FileName = dr.GetString("FileName"), Path = dr.GetString("Path") });
                     Console.WriteLine("path: " + dr.GetString("Path"));
                 }
                 dr.Close();
-                //cmd.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
-                //throw ex;
                 StatusBox.Text = ex.ToString();
             }
             finally
@@ -70,47 +112,87 @@ namespace ReportApp_Client
             if (UpdateClient(RecievedFiles, ClientName))
             {
                 RecievedFileCount.Text = RecievedFiles.Count.ToString();
+                if (RecievedFiles.Count>0)
+                {
+                    FileDownloadBtn.Enabled = true;
+                }
+                foreach (var file in RecievedFiles)
+                {
+                    string[] item = {file.FileName, file.Path};
+                    //listViewForRecivedFile.Items.Add(new ListViewItem(item));
+                    CheckedListForRecivedFile.Items.Add(file.FileName);
+                    FilesToDownload.Add(file.Path);
+                }
             }
             else
             {
                 RecievedFiles.Clear();
+                FilesToDownload.Clear();
             }
         }
-        bool UpdateClient(List<string> RecievedFiles, string clientName)
+        bool UpdateClient(List<Files> RecievedFiles, string clientName)
         {
-            //MySqlConnection con = new MySqlConnection(MyConnectionString);
-            foreach(var filePath in RecievedFiles)
-            {
-                if (!UpdateClientHelper(filePath, clientName))
-                {
-                    return false;
-                }
-            }
             return true;
         }
-        bool UpdateClientHelper(string filePath, string clientName)
+
+        private void FileDownloadBtn_Click(object sender, EventArgs e)
         {
+            foreach (var file in CheckedListForRecivedFile.CheckedItems)
+            {
+                DownloadFile(file.ToString());
+            }
+        }
+        void DownloadFile(string fileName)
+        {
+            Console.WriteLine(fileName);
+            foreach (var file in this.RecievedFiles)
+            {
+                if(file.FileName == fileName)
+                {   if(UpdateStatus(fileName, "IsFetched", "Fetched_On"))
+                    {
+                        File.Copy(file.Path, "C:\\Users\\dSMART-PC-16\\source\\repos\\ReportApp\\ReportApp-Client\\Resources\\Downloads\\" + Path.GetFileName(fileName));
+                    }
+                }
+            }
+            
+        }
+        bool UpdateStatus(string fileName, string StatusName, string updateTime)
+        {
+            string ClientName = "TestName";
             try
             {
+                DateTime now = DateTime.Now;
+                var date = now.Date.ToString().Split(' ');
+                //2023 - 08 - 22 17:06:28
+                var formateDate = date[0].Split('/');
+                var dateTime = formateDate[2]+"-"+ formateDate[1] +"-"+ formateDate[0] + " " + date[1];
+                //var dateTime = SqlDbType.DateTime;
+                Console.WriteLine(dateTime);
                 con.Open();
                 cmd = con.CreateCommand();
-                cmd.CommandText = "UPDATE `reportfiles` SET `ClientName` = @ClientName, `IsGenerated` = '1' WHERE `reportfiles`.`Path` = @Path";
-                cmd.Parameters.AddWithValue("@Path", filePath);
-                cmd.Parameters.AddWithValue("@ClientName", clientName);
-                if (cmd.ExecuteNonQuery() > 0)
-                {
-                    return true;
+                cmd.CommandText = "UPDATE `reportfiles` SET `" + updateTime + "` = '" + dateTime + "', `" + StatusName + "` = '1', `ClientName` = '" + ClientName + "' WHERE `reportfiles`.`FileName` = '" + fileName + "'";
+                if(cmd.ExecuteNonQuery()>0){
+                  return true;
                 }
-                return false;
-            } catch(Exception ex){
-                StatusBox.Text = ex.ToString();
-                return false;
+            } catch(Exception ex)
+            {
+                throw ex;
             }
             finally
             {
                 con.Close();
             }
+            return false;
         }
+
+        private void GenerateBtn_Click(object sender, EventArgs e)
+        {
+            GeneratePDFForm generatePDFForm = new GeneratePDFForm("TestName");
+            generatePDFForm.Show();
+
+        }
+
+
         //generating PDF
 
         //private void btnGeneratePDF_Click(object sender, EventArgs e)

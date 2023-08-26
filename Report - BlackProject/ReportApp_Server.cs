@@ -41,12 +41,10 @@ namespace ReportApp_Server
                     Console.WriteLine(dr.GetString("FileName"));
                 }
                 dr.Close();
-                //cmd.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
                 status.Text = ex.ToString();
-                //throw ex;
             }
             finally
             {
@@ -76,7 +74,6 @@ namespace ReportApp_Server
             catch (Exception ex)
             {
                 status.Text = ex.ToString();
-                //throw ex;
             }
             finally
             {
@@ -96,10 +93,12 @@ namespace ReportApp_Server
             List<string> DBFiles = form.getReportsData();
             List<string> DuplicateFiles = new List<string>();
             NewFiles.Clear();
-            //list<string> = form.getReportsData();
             form.FolderPath = textBoxForPath.Text;
             Console.WriteLine(form.FolderPath);
             FolderPathView.Text = form.FolderPath;
+            ListForDuplicateFile.Items.Clear();
+            ListForDuplicateFile.Visible = false;
+            DuplicateFilesListLabel.Visible = false;
             try
             {
                 var list = Directory.GetFiles(form.FolderPath, "*.csv", SearchOption.AllDirectories);
@@ -119,6 +118,7 @@ namespace ReportApp_Server
                         else
                         {
                             DuplicateFiles.Add(fileName);
+                            ListForDuplicateFile.Items.Add(fileName);
                         }
                     }
                     if (DuplicateFiles.Count > 0)
@@ -127,13 +127,11 @@ namespace ReportApp_Server
                     }
                     DuplicateFileCountLabel.Text = DuplicateFiles.Count.ToString();
                     NewFileCountLabel.Text = NewFiles.Count.ToString();
-                    TotalFileCountLabel.Text = DBFiles.Count.ToString();
                     if (NewFiles.Count>0)
                     {
                         CDInpBox.Text = getCDName(form.FolderPath);
                         UploadBtn.Enabled = true;
                         CDInpBox.Enabled = true;
-                        //FetchBtn.Enabled = false;
                     }
                     status.Text = "";
                 }
@@ -161,7 +159,6 @@ namespace ReportApp_Server
                 status.Text = "Files uploading";
                 FetchBtn.Enabled = false;
                 NewFiles.ForEach(fn => form.insertData(fn, form.FolderPath+"\\"+fn, form.CD));
-                //NewFiles.ForEach(fn => Console.WriteLine(fn+ form.FolderPath + "\\"+fn));
                 NewFileCountLabel.Text = "0";
             }
             catch (Exception ex)
@@ -180,7 +177,7 @@ namespace ReportApp_Server
         string getFileName(string path)
         {
             var filePathArray = path.Split('\\');
-            return filePathArray[filePathArray.Length - 1].Split('.')[0];  
+            return filePathArray[filePathArray.Length-1];  
         }
         string getCDName(string path)
         {
@@ -188,5 +185,11 @@ namespace ReportApp_Server
             return filePathArray[filePathArray.Length - 1];
         }
 
+        private void ViewDupBtn_Click(object sender, EventArgs e)
+        {
+            ListForDuplicateFile.Visible = true;
+            DuplicateFilesListLabel.Visible = true;
+        }
+        
     }
 }
